@@ -1,12 +1,11 @@
 package p2p;
-
 import java.util.Scanner;
 
 public class TTT {
 	public String [][] board = null;
 	
-	private static final int ROWS = 3; 
-	private static final int COLS = 3; 
+	private static int ROWS = 3; 
+	private static int COLS = 3; 
 	private static String SPACE = " ";
 	
 	/*
@@ -21,7 +20,19 @@ public class TTT {
 			}
 		}
 	}
-	
+
+	TTT(int r, int c) {
+		ROWS = r;
+		COLS = c;
+		board = new String[ROWS][COLS];
+		
+		for(int i = 0; i < ROWS; i++) {
+			for(int j = 0; j < COLS; j++) {
+				board[i][j] = SPACE;
+			}
+		}
+	}
+
 	/*
 	 * Name: toString
 	 * @return String version of board
@@ -88,20 +99,32 @@ public class TTT {
 	 */
 	public boolean hasWon(String XorO) {
 		
-		if( (board[0][0] == XorO) &&
-			(board[0][1] == XorO) &&
-			(board[0][2] == XorO) ) {
-			return true;
-		}
-		
-		if( (board[1][0] == XorO) &&
-			(board[1][1] == XorO) &&
-			(board[1][2] == XorO) ) {
-			return true;
+		for(int r = 0; r< ROWS; r++) {
+			if( (board[r][0] == XorO) &&
+				(board[r][1] == XorO) &&
+				(board[r][2] == XorO) ) {
+				return true;
+			}
 		}
 
+		for(int c = 0; c < COLS; c++) {
+			if( (board[0][c] == XorO) &&
+				(board[1][c] == XorO) &&
+				(board[2][c] == XorO) ) {
+				return true;
+			}
+		}
 		
-		//do the rest of 8 cases
+		if( (board[0][0] == XorO) &&
+			(board[1][1] == XorO) &&
+			(board[2][2] == XorO) ) {
+			return true;
+		}
+		if( (board[0][2] == XorO) &&
+			(board[1][1] == XorO) &&
+			(board[2][0] == XorO) ) {
+			return true;
+		}
 		
 		return false;
 	}
@@ -143,10 +166,23 @@ public class TTT {
 				System.out.print("Invalid entry. Please reenter");				
 			}
 		}
-		scan.close();
 		set(row, col, XorO);
 	}
 	
+	//For GUI
+	public boolean makeMove(int r, int c, String XorO) {
+        int row = r;
+        int col = c;
+		boolean inputValid = false;
+        
+		if(isValid(row, col)) {
+			set(row, col, XorO);
+			return true;
+		} else {
+			System.out.println("Invalid entry. Please reenter");		
+			return false;
+		}
+	}
 	/*
 	 * 
 	 */

@@ -4,12 +4,12 @@ import java.awt.Color;
 import java.awt.event.MouseEvent;
 
 import acm.graphics.*;
-import acm.program.*;
+import acm.program.GraphicsProgram;
 
 public class TTTGui extends GraphicsProgram {
 
-	final int ROW = 3;
-	final int COL = 3;
+	static final int ROW = 3;
+	static final int COL = 3;
 	GRect [][] board;
 	GObject clickedObj;
 	private GPoint c;
@@ -18,29 +18,42 @@ public class TTTGui extends GraphicsProgram {
 	private TTT ttt;
 	private String currentMove = "X";
 	private GLabel currentTurn;
-	private GLabel xMark = new GLabel("X");
-	private GLabel oMark = new GLabel("O");
+	private GLabel [] xMark; 
+	private GLabel [] oMark;
+	private GLabel gameOver;
+	private int noMarks = 0;
 	
 	public void init() {
 		//println("Tic Tac Toe");
-		ttt = new TTT();
+		ttt = new TTT(ROW, COL);
 		setSize(400,400);
 		setTitle("Tic Tac Toe");
 		board = new GRect[ROW][COL];
+		noMarks = (ROW*COL+1)/2;
+		xMark = new GLabel [noMarks];
+		oMark = new GLabel [noMarks];
 		c = new GPoint(getWidth()/2, getHeight()/2);
 		side = (Math.min(getWidth(), getHeight())- 100)/3;
 		currentTurn = new GLabel(currentMove+" turn");
 		currentTurn.setFont("Arial-Bold-16");
 		
-		xMark.setFont("Arial-Bold-72");
-		xMark.setColor(Color.BLUE);
-		oMark.setFont("Arial-Bold-72");
-		oMark.setColor(Color.RED);
-		
+		for(int i = 0; i < noMarks; i++) {
+			xMark[i] = new GLabel("X");
+			oMark[i] = new GLabel("O");
+			xMark[i].setFont("Arial-Bold-72");
+			xMark[i].setColor(Color.BLUE);
+			oMark[i].setFont("Arial-Bold-72");
+			oMark[i].setColor(Color.RED);
+		}
+		gameOver = new GLabel("Game Over");
+		gameOver.setFont("Arial-Bold-50");
+		gameOver.setColor(Color.MAGENTA);
 		addMouseListeners();
 	}
 	
 	private void SetBoard() {
+		int xc = 0;		// local X mark count
+		int oc = 0;		// local O mark count
 		for(int i = 0; i < ROW; i++) {
 			for(int j = 0; j < COL; j++) {
 				board[i][j] = new GRect((c.getX()-side*1.5)+side*i, (c.getY()-side*1.5)+side*j, side, side);
@@ -51,25 +64,57 @@ public class TTTGui extends GraphicsProgram {
 					board[i][j].setColor(Color.LIGHT_GRAY);
 				}
 				add(board[i][j]);
+				GPoint sel = new GPoint(board[i][j].getX()+board[i][j].getWidth()/2,
+						board[i][j].getY()+board[i][j].getHeight()/2);
+				
+				if(ttt.board[i][j].equals("X")) {
+					add(xMark[xc], sel.getX()-xMark[xc].getWidth()/2, sel.getY()+xMark[xc].getHeight()/4);
+					xc++;
+				} else if (ttt.board[i][j].equals("O")) {
+					add(oMark[oc], sel.getX()-oMark[oc].getWidth()/2, sel.getY()+oMark[oc].getHeight()/4);
+					oc++;
+				}
 			}
 		}
 	}
 	
 	public void mouseClicked(MouseEvent e) {
+		boolean inputValid = false;
 		double x = e.getX();
 		double y = e.getY();
 		clickedObj = getElementAt(x,y);
-
-		GPoint sel = new GPoint(clickedObj.getX()+clickedObj.getWidth()/2,
-								clickedObj.getY()+clickedObj.getHeight()/2);
-		if(currentMove.equals("X") ) {
-			currentMove = "O";
-			add(xMark, sel.getX()-xMark.getWidth()/2, sel.getY()+xMark.getHeight()/4);
-		} else {
-			currentMove = "X";
-			add(oMark, sel.getX()-oMark.getWidth()/2, sel.getY()+oMark.getHeight()/4);			
+		
+		for(int r = 0; r < ROW; r++) {
+			for(int c = 0; c < COL; c++) {
+				if(clickedObj.equals(board[r][c])) {
+					inputValid = ttt.makeMove(r, c, currentMove);
+				}
+			}
 		}
 		
+		if (inputValid) {
+			if(ttt.isDraw()) {
+				System.out.println("Draw....");
+				currentTurn.setLabel("Draw.  \nGame Over!");
+				gameOver.setLabel("Game Over:Draw");
+				add(gameOver, c.getX()-gameOver.getWidth()/2, c.getY());
+			} else if (ttt.hasWon(currentMove)) {
+				currentTurn.setLabel("Game Over!");				
+				System.out.println(currentMove+" won!");
+				gameOver.setLabel("Game Over!\n "+currentMove+" Won");
+				add(gameOver, c.getX()-gameOver.getWidth()/2, c.getY());
+			} else {
+				if(currentMove.equals("X") ) {
+					currentMove = "O";
+				} else {
+					currentMove = "X";
+				}
+				currentTurn.setLabel(currentMove+" turn");
+				
+			}
+			SetBoard();
+			gameOver.sendToFront();
+		}		
 	}
 	public void run() {
 		add(currentTurn, c.getX()-currentTurn.getWidth()/2, 20);
