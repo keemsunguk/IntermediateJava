@@ -1,4 +1,4 @@
-package p2p;
+package p2c;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -125,6 +125,7 @@ public class TTTGui extends GraphicsProgram {
 			} else {
 				ChangeTurns();
 				currentTurn.setLabel(currentMove+" turn");
+				ttt.ComputerMove(currentMove);
 			}
 			SetBoard();
 			gameOver.sendToFront();
